@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/master/etc/cyclonedds.xsd">
+    <Domain Id="any">
+        <General>
+            <NetworkInterfaceAddress>auto</NetworkInterfaceAddress>
+            <AllowMulticast>true</AllowMulticast>
+        </General>
+        <Threads>
+            <Thread Name="recv">
+                <Scheduling>
+                    <Priority>40</Priority>
+                    <Class>Realtime</Class>
+                </Scheduling>
+            </Thread>
+            <Thread Name="dq.builtins">
+                <Scheduling>
+                    <Priority>40</Priority>
+                    <Class>Realtime</Class>
+                </Scheduling>
+            </Thread>
+            <Thread Name="tev">
+                <Scheduling>
+                    <Priority>40</Priority>
+                    <Class>Realtime</Class>
+                </Scheduling>
+            </Thread>
+            <Thread Name="xmit.user">
+                <Scheduling>
+                    <Priority>40</Priority>
+                    <Class>Realtime</Class>
+                </Scheduling>
+            </Thread>
+            <Thread Name="dq.user">
+                <Scheduling>
+                    <Priority>40</Priority>
+                    <Class>Realtime</Class>
+                </Scheduling>
+            </Thread>
+        </Threads>
+    </Domain>
+</CycloneDDS>
