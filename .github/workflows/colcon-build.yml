@@ -1,0 +1,27 @@
+name: build and test
+on:
+  push:
+    branches: rolling
+  pull_request:
+    branches: rolling
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup ROS 2
+        uses: ros-tooling/setup-ros@v0.2
+        with:
+          required-ros-distributions: rolling
+
+      - name: Run Tests
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          package-name: ros2_realtime_examples
+          target-ros2-distro: rolling
+
+      - name: Upload Logs
+        uses: actions/upload-artifact@v1
+        with:
+          name: colcon-logs
+          path: ros_ws/log
+        if: always()
