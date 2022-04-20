@@ -17,6 +17,7 @@ find_package(iceoryx_utils REQUIRED)
 find_package(apex_containers REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(trajectory_msgs REQUIRED)
+find_package(pendulum_msgs REQUIRED)
 
 add_executable(minimal_atomic_message minimal_atomic_message.cpp)
 ament_target_dependencies(minimal_atomic_message rclcpp std_msgs)
@@ -31,11 +32,15 @@ ament_target_dependencies(minimal_lock_free_queue_logging
 add_executable(minimal_lock_free_queue minimal_lock_free_queue.cpp)
 ament_target_dependencies(minimal_lock_free_queue rclcpp iceoryx_utils trajectory_msgs)
 
+add_executable(minimal_pendulum_controller minimal_pendulum_controller.cpp)
+ament_target_dependencies(minimal_pendulum_controller rclcpp iceoryx_utils trajectory_msgs pendulum_msgs)
+
 install(TARGETS
   minimal_atomic_message
   minimal_atomic_parameter
   minimal_lock_free_queue
   minimal_lock_free_queue_logging
+  minimal_pendulum_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 
