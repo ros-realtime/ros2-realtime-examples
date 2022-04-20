@@ -31,7 +31,7 @@ class MinimalPublisher : public rclcpp::Node
 {
 public:
   MinimalPublisher()
-  : Node("minimal_scheduling"), msg_(std_msgs::msg::UInt32())
+  : Node("minimal_publisher"), msg_(std_msgs::msg::UInt32())
   {
     // Make the callback groups reentrant so they can run concurrently
     auto reentrant_callback_group =
@@ -42,17 +42,30 @@ public:
       auto publisher = this->create_publisher<std_msgs::msg::UInt32>("topic", 10, options);
       auto timer_callback =
         [this, pub_index, publisher]() -> void {
-          msg_.data++;
-          RCLCPP_INFO(this->get_logger(), "Publisher %d: '%d'", pub_index, msg_.data);
-          publisher->publish(msg_);
+          auto msg = increment_message_data();
+          RCLCPP_INFO(this->get_logger(), "Publisher %d: '%d'", pub_index, msg.data);
+          publisher->publish(msg);
         };
       timers_.push_back(this->create_wall_timer(100ms, timer_callback, reentrant_callback_group));
     }
   }
 
+  std_msgs::msg::UInt32 increment_message_data()
+  {
+    auto old_value = msg_.load();
+    auto new_value = old_value;
+    new_value.data++;
+    do {
+      if (msg_.compare_exchange_strong(old_value, new_value)) {
+        break;
+      }
+    } while(true);
+    return new_value;
+  }
+
 private:
   std::vector<rclcpp::TimerBase::SharedPtr> timers_;
-  std_msgs::msg::UInt32 msg_;
+  std::atomic<std_msgs::msg::UInt32> msg_;
 };
 
 int main(int argc, char * argv[])
