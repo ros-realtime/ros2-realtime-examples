@@ -7,8 +7,9 @@
 TODO: customize profile for real-time applications
 
 ```bash
+export RMW_FASTRTPS_USE_QOS_FROM_XML=1
 export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
-export FASTRTPS_DEFAULT_PROFILES_FILE=`ros2 pkg prefix minimal_dds_tuning`/share/minimal_dds_tuning/dds_profiles/rmw_fastrtps/DEFAULT_FASTRTPS_PROFILES.xml
+export FASTRTPS_DEFAULT_PROFILES_FILE=`ros2 pkg prefix minimal_dds_tuning`/share/minimal_dds_tuning/dds_profiles/rmw_fastrtps/REALTIME_FASTRTPS_PROFILES.xml
 ```
 
 ### rmw_cyclonedds
