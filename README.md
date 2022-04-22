@@ -1,6 +1,6 @@
 # Minimal ROS 2 real-time cookbook recipes
 
-Collection of ROS 2 minimal examples showing how to leverage different POSIX and ROS features to
+Collection of ROS 2 minimal examples showing how to leverage different POSIX and ROS 2 features to
 create real-time applications.
 
 * [minimal_scheduling](minimal_scheduling/README.md): shows how to configure the process or thread(s
