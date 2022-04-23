@@ -59,7 +59,20 @@ int main(int argc, char * argv[])
   CPU_SET(cpu_id, &cpuset);
   auto ret = pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
   if (ret > 0) {
-    printf("Couldn't set CPU affinity. Error code %d", ret);
+    std::cerr << "Couldn't set CPU affinity. Error code " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
+  }
+  // Check the actual affinity mask assigned to the thread
+  ret = pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset);
+  if (ret < 0) {
+    std::cerr << "Couldn't get CPU affinity. Error code " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
+  }
+  std::cout << "Pinned CPUs:" << std::endl;
+  for (int i = 0; i < CPU_SETSIZE; i++) {
+    if (CPU_ISSET(i, &cpuset)) {
+      std::cout << "    CPU " << std::to_string(i) << std::endl;
+    }
   }
 
   rclcpp::spin(node);
