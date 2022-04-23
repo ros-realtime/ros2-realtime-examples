@@ -22,6 +22,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
+/* For this example, we will be configuring the main thread scheduling policy with a SCHED_FIFO
+ * real-time scheduling and with real-time priority. The thread middleware threads will inherit
+ * these settings because they are created after the scheduling configuration. */
 
 using namespace std::chrono_literals;
 
@@ -50,6 +53,13 @@ private:
 
 int main(int argc, char * argv[])
 {
+  // The middleware threads are created on the node construction.
+  // Since the main thread settings are configured AFTER the middleware threads
+  // are created, the middleware threads will NOT inherit the scheduling settings.
+  // From: https://linux.die.net/man/3/pthread_create
+  // "The new thread inherits copies of the calling thread's capability sets
+  // (see capabilities(7)) and CPU affinity mask (see sched_setaffinity(2))."
+
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<MinimalPublisher>();
@@ -59,7 +69,8 @@ int main(int argc, char * argv[])
   param.sched_priority = 90;
   auto ret = pthread_setschedparam(pthread_self(), policy, &param);
   if (ret > 0) {
-    printf("Couldn't set scheduling priority and policy. Error code %d", ret);
+    std::cerr << "Couldn't set scheduling priority and policy. Error code " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
   }
   rclcpp::spin(node);
   rclcpp::shutdown();

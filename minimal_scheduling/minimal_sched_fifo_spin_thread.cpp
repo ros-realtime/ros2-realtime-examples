@@ -22,6 +22,10 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
+/* For this example, we will be configuring the scheduling policy of a thread used to spin the
+ * executor. In this case, the thread middleware threads will not inherit these settings because
+ * the settings apply only to the spinner thread. */
+
 using namespace std::chrono_literals;
 
 class MinimalPublisher : public rclcpp::Node
@@ -49,12 +53,17 @@ private:
 
 int main(int argc, char * argv[])
 {
+  // The node is spun in a separate thread adn configured after it is created
+  // The spin thread settings are configured after the middleware threads
+  // are created. The middleware threads will NOT inherit the scheduling settings.
+  // From: https://linux.die.net/man/3/pthread_create
+  // "The new thread inherits copies of the calling thread's capability sets
+  // (see capabilities(7)) and CPU affinity mask (see sched_setaffinity(2))."
+
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<MinimalPublisher>();
-
-  // The node is spun in a separate thread adn configured after it is created
-  auto rt_thread = std::thread(
+  auto spin_thread = std::thread(
     [&]() {
       rclcpp::spin(node);
     });
@@ -62,12 +71,13 @@ int main(int argc, char * argv[])
   struct sched_param param;
   int policy = SCHED_FIFO;
   param.sched_priority = 90;
-  auto ret = pthread_setschedparam(rt_thread.native_handle(), policy, &param);
+  auto ret = pthread_setschedparam(spin_thread.native_handle(), policy, &param);
   if (ret > 0) {
-    printf("Couldn't set scheduling priority and policy. Error code %d", ret);
+    std::cerr << "Couldn't set scheduling priority and policy. Error code " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
   }
 
-  rt_thread.join();
+  spin_thread.join();
   rclcpp::shutdown();
   return 0;
 }

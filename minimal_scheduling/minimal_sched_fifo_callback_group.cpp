@@ -22,6 +22,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
+/* For this example, we will be using multiple callback groups to separate callbacks, so it is
+ * possible to spin them in threads with different scheduling priorities. */
+
 using namespace std::chrono_literals;
 
 class MinimalPublisher : public rclcpp::Node
@@ -117,7 +120,8 @@ int main(int argc, char * argv[])
   default_callback_group_executor.add_node(node_pub);
   default_callback_group_executor.add_node(node_sub);
 
-  // the real-time callback groups are added to a specific executor for real-time purposes
+  // the real-time callback groups are added to a specific executor which is run in a thread
+  // with real-time scheduling
   // note we could have more than one executor with different scheduling policies and priorities
   realtime_executor.add_callback_group(
     node_pub->get_realtime_callback_group(), node_pub->get_node_base_interface());
@@ -135,7 +139,8 @@ int main(int argc, char * argv[])
   param.sched_priority = 90;
   auto ret = pthread_setschedparam(realtime_thread.native_handle(), policy, &param);
   if (ret > 0) {
-    printf("Couldn't set scheduling priority and policy. Error code %d", ret);
+    std::cerr << "Couldn't set scheduling priority and policy. Error code " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
   }
 
   default_callback_group_executor.spin();

@@ -3,9 +3,8 @@
 Collection of ROS 2 minimal examples showing how to leverage different POSIX and ROS 2 features to
 create real-time applications.
 
-* [minimal_scheduling](minimal_scheduling/README.md): shows how to configure the process or thread(s
-) scheduling policy and
- priority (TODO: add SCHED_DEADLINE example)
+* [minimal_scheduling](minimal_scheduling/README.md): shows how to configure the thread(s)
+scheduling policy and priority (TODO: add SCHED_DEADLINE example)
 * [minimal_cpu_affinity](minimal_cpu_affinity/README.md): shows how to set the process and threads CPU affinity
 * [minimal_realtime_loop](minimal_realtime_loop/README.md): shows different approaches to created typical real-time time based loops
 * [minimal_memory_lock](minimal_memory_lock/README.md): shows how to lock the process memory and

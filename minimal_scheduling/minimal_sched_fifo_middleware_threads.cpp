@@ -22,6 +22,10 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
+/* For this example, we will be configuring the main thread scheduling policy before the node
+ * creation. The thread middleware threads will inherit these settings because they are created
+ * after the scheduling configuration. */
+
 using namespace std::chrono_literals;
 
 class MinimalPublisher : public rclcpp::Node
@@ -49,21 +53,23 @@ private:
 
 int main(int argc, char * argv[])
 {
-  rclcpp::init(argc, argv);
-
-  // The main thread settings are set before the middleware threads
-  // are created. The middleware threads will inherit the scheduling settings.
+  // The middleware threads are created on the node construction.
+  // Since the main thread settings are configured before the middleware threads
+  // are created, the middleware threads will inherit the scheduling settings.
   // From: https://linux.die.net/man/3/pthread_create
-  // The new thread inherits copies of the calling thread's capability sets
-  // (see capabilities(7)) and CPU affinity mask (see sched_setaffinity(2)).
+  // "The new thread inherits copies of the calling thread's capability sets
+  // (see capabilities(7)) and CPU affinity mask (see sched_setaffinity(2))."
 
   struct sched_param param;
   int policy = SCHED_FIFO;
   param.sched_priority = 90;
   auto ret = pthread_setschedparam(pthread_self(), policy, &param);
   if (ret > 0) {
-    printf("Couldn't set scheduling priority and policy. Error code %d", ret);
+    std::cerr << "Couldn't set scheduling priority and policy. Error code " << strerror(errno) << std::endl;
+    return EXIT_FAILURE;
   }
+
+  rclcpp::init(argc, argv);
 
   rclcpp::spin(std::make_shared<MinimalPublisher>());
   rclcpp::shutdown();
