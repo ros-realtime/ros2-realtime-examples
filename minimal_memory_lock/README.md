@@ -7,8 +7,16 @@ Adjust permissions for memory locking see (https://docs.ros.org/en/foxy/Tutorial
 
 ## How to run
 
+Without locking memory:
+
 ```bash
 $ ros2 run minimal_memory_lock minimal_memory_lock
+```
+
+Locking the memory:
+
+```bash
+$ ros2 run minimal_memory_lock minimal_memory_lock -m
 ```
 
 ## Resources

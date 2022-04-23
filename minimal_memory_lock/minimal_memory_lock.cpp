@@ -53,7 +53,7 @@ bool configure_malloc_behavior()
 
   // Turn off mmap usage.
   if (mallopt(M_MMAP_MAX, 0) == 0) {
-    std::cerr << "\"mallopt for mmap failed. Error code " << strerror(errno) << std::endl;
+    std::cerr << "mallopt for mmap failed. Error code " << strerror(errno) << std::endl;
     mallopt(M_TRIM_THRESHOLD, 128 * 1024);
     munlockall();
     return false;
@@ -69,6 +69,7 @@ bool reserve_process_memory(size_t memory_size)
   int res;
   res = posix_memalign(&buf, static_cast<size_t>(pg_sz), memory_size);
   if (res != 0) {
+    std::cerr << "Failed to reserve memory. Error code " << strerror(errno) << std::endl;
     return false;
   }
   memset(buf, 0, memory_size);
@@ -90,6 +91,14 @@ std::pair<std::int32_t, std::int32_t> get_new_page_faults() noexcept
 
   return page_faults;
 }
+
+std::int32_t get_process_memory()
+{
+  struct rusage rusage;
+  getrusage(RUSAGE_SELF, &rusage);
+  return static_cast<std::int32_t>(rusage.ru_maxrss);
+}
+
 }  // namespace
 
 class MinimalPublisher : public rclcpp::Node
@@ -107,7 +116,7 @@ public:
         auto [minor, major] = get_new_page_faults();
         RCLCPP_INFO(
           this->get_logger(),
-          "New minor page faults: %ld, New major page faults: %ld", minor, major);
+          "New minor page faults: %d, New major page faults: %d", minor, major);
       };
     timer_ = this->create_wall_timer(500ms, timer_callback);
   }
@@ -122,13 +131,28 @@ int main(int argc, char * argv[])
 {
   constexpr size_t process_max_dynamic_memory = 100 * 1024 * 1024;  // 100 MB
 
-  if (configure_malloc_behavior()) {
-    std::cout << "Memory locked" << std::endl;
-  } else {
-    return EXIT_FAILURE;
+  bool lock_memory = false;
+  if (argc > 1) {
+    if (std::string(argv[1]) == "-m") {
+      lock_memory = true;
+    }
   }
-  if (!reserve_process_memory(process_max_dynamic_memory)) {
-    return EXIT_FAILURE;
+
+  if (lock_memory) {
+    if (configure_malloc_behavior()) {
+      std::cout << "Memory locked" << std::endl;
+    } else {
+      return EXIT_FAILURE;
+    }
+    if (reserve_process_memory(process_max_dynamic_memory)) {
+      std::cout << "Reserved memory: " <<
+        std::to_string(process_max_dynamic_memory / (1024 * 1024)) << " MB" << std::endl;
+
+      std::cout << "Total memory process: " <<
+        std::to_string(get_process_memory() / 1024) << " MB" << std::endl;
+    } else {
+      return EXIT_FAILURE;
+    }
   }
 
   rclcpp::init(argc, argv);
@@ -138,14 +162,9 @@ int main(int argc, char * argv[])
   auto [minor, major] = get_new_page_faults();
   RCLCPP_INFO(
     node->get_logger(),
-    "Initial minor page faults: %ld, Initial major page faults: %ld", minor, major);
+    "Initial minor page faults: %d, Initial major page faults: %d", minor, major);
 
   rclcpp::spin(node);
-
-  auto [minor_final, major_final] = get_new_page_faults();
-  RCLCPP_INFO(
-    node->get_logger(),
-    "Final minor page faults: %ld, Final major page faults: %ld", minor_final, major_final);
 
   rclcpp::shutdown();
   return 0;
