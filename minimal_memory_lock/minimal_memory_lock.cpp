@@ -37,38 +37,58 @@ using namespace std::chrono_literals;
 
 namespace
 {
-void configure_malloc_behavior()
+bool configure_malloc_behavior()
 {
   // Lock all current and future pages
   if (mlockall(MCL_CURRENT | MCL_FUTURE) != 0) {
-    throw std::runtime_error("mlockall failed");
+    std::cerr << "mlockall failed. Error code " << strerror(errno) << std::endl;
+    return false;
   }
 
   // Turn off malloc trimming.
   if (mallopt(M_TRIM_THRESHOLD, -1) == 0) {
-    throw std::runtime_error("mallopt for trim threshold failed");
+    std::cerr << "mallopt for trim threshold failed. Error code " << strerror(errno) << std::endl;
+    return false;
   }
 
   // Turn off mmap usage.
   if (mallopt(M_MMAP_MAX, 0) == 0) {
-    perror("mallopt for mmap failed");
+    std::cerr << "\"mallopt for mmap failed. Error code " << strerror(errno) << std::endl;
     mallopt(M_TRIM_THRESHOLD, 128 * 1024);
     munlockall();
-    throw std::runtime_error("mallopt for mmap failed");
+    return false;
   }
+
+  return true;
 }
 
-void reserve_process_memory(size_t memory_size)
+bool reserve_process_memory(size_t memory_size)
 {
   void * buf = nullptr;
   const size_t pg_sz = sysconf(_SC_PAGESIZE);
   int res;
   res = posix_memalign(&buf, static_cast<size_t>(pg_sz), memory_size);
   if (res != 0) {
-    throw std::runtime_error("proc rt init mem aligning failed");
+    return false;
   }
   memset(buf, 0, memory_size);
   free(buf);
+  return true;
+}
+
+std::pair<std::int32_t, std::int32_t> get_new_page_faults() noexcept
+{
+  static struct rusage rusage_prev;
+  struct rusage rusage;
+  std::pair<std::int32_t, std::int32_t> page_faults;
+
+  getrusage(RUSAGE_SELF, &rusage);
+  page_faults.first = static_cast<std::int32_t>(rusage.ru_minflt - rusage_prev.ru_minflt);
+  page_faults.second = static_cast<std::int32_t>(rusage.ru_majflt - rusage_prev.ru_majflt);
+  rusage_prev.ru_minflt = rusage.ru_minflt;
+  rusage_prev.ru_majflt = rusage.ru_majflt;
+
+  return page_faults;
 }
 }  // namespace
 
@@ -76,15 +96,18 @@ class MinimalPublisher : public rclcpp::Node
 {
 public:
   MinimalPublisher()
-  : Node("minimal_scheduling"), count_(0)
+  : Node("minimal_publisher"), count_(0)
   {
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     auto timer_callback =
       [this]() -> void {
         auto message = std_msgs::msg::String();
         message.data = "Hello, world! " + std::to_string(this->count_++);
-        RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
         this->publisher_->publish(message);
+        auto [minor, major] = get_new_page_faults();
+        RCLCPP_INFO(
+          this->get_logger(),
+          "New minor page faults: %ld, New major page faults: %ld", minor, major);
       };
     timer_ = this->create_wall_timer(500ms, timer_callback);
   }
@@ -97,15 +120,33 @@ private:
 
 int main(int argc, char * argv[])
 {
+  constexpr size_t process_max_dynamic_memory = 100 * 1024 * 1024;  // 100 MB
+
+  if (configure_malloc_behavior()) {
+    std::cout << "Memory locked" << std::endl;
+  } else {
+    return EXIT_FAILURE;
+  }
+  if (!reserve_process_memory(process_max_dynamic_memory)) {
+    return EXIT_FAILURE;
+  }
+
   rclcpp::init(argc, argv);
 
-  constexpr size_t process_max_dynamic_memory = 10 * 1024 * 1024;  // 10 MB
-
   auto node = std::make_shared<MinimalPublisher>();
-  configure_malloc_behavior();
-  reserve_process_memory(process_max_dynamic_memory);
+
+  auto [minor, major] = get_new_page_faults();
+  RCLCPP_INFO(
+    node->get_logger(),
+    "Initial minor page faults: %ld, Initial major page faults: %ld", minor, major);
 
   rclcpp::spin(node);
+
+  auto [minor_final, major_final] = get_new_page_faults();
+  RCLCPP_INFO(
+    node->get_logger(),
+    "Final minor page faults: %ld, Final major page faults: %ld", minor_final, major_final);
+
   rclcpp::shutdown();
   return 0;
 }
