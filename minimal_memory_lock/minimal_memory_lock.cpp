@@ -77,26 +77,41 @@ bool reserve_process_memory(size_t memory_size)
   return true;
 }
 
-std::pair<std::int32_t, std::int32_t> get_new_page_faults() noexcept
+std::pair<std::int32_t, std::int32_t> get_page_faults()
 {
-  static struct rusage rusage_prev;
   struct rusage rusage;
-  std::pair<std::int32_t, std::int32_t> page_faults;
-
   getrusage(RUSAGE_SELF, &rusage);
-  page_faults.first = static_cast<std::int32_t>(rusage.ru_minflt - rusage_prev.ru_minflt);
-  page_faults.second = static_cast<std::int32_t>(rusage.ru_majflt - rusage_prev.ru_majflt);
-  rusage_prev.ru_minflt = rusage.ru_minflt;
-  rusage_prev.ru_majflt = rusage.ru_majflt;
-
-  return page_faults;
+  return std::make_pair(rusage.ru_minflt, rusage.ru_majflt);
 }
 
-std::int32_t get_process_memory()
+std::pair<std::int32_t, std::int32_t> get_new_page_faults()
+{
+  static std::pair<std::int32_t, std::int32_t> page_faults_prev;
+  std::pair<std::int32_t, std::int32_t> diff_page_faults;
+  auto [minor, major] = get_page_faults();
+  diff_page_faults.first = static_cast<std::int32_t>(minor - page_faults_prev.first);
+  diff_page_faults.second = static_cast<std::int32_t>(major - page_faults_prev.second);
+  page_faults_prev.first = minor;
+  page_faults_prev.second = major;
+  return diff_page_faults;
+}
+
+std::size_t get_process_memory()
 {
   struct rusage rusage;
   getrusage(RUSAGE_SELF, &rusage);
-  return static_cast<std::int32_t>(rusage.ru_maxrss);
+  return static_cast<std::size_t>(rusage.ru_maxrss);
+}
+
+void print_page_faults(const std::string & prefix)
+{
+  auto [minor, major] = get_page_faults();
+  printf("%s Minor page faults: %d, Major page faults: %d\n", prefix.c_str(), minor, major);
+}
+
+void print_process_memory(const std::string & prefix)
+{
+  printf("%s Total process memory: %ld MB\n", prefix.c_str(), get_process_memory() / 1024);
 }
 
 }  // namespace
@@ -129,7 +144,7 @@ private:
 
 int main(int argc, char * argv[])
 {
-  constexpr size_t process_max_dynamic_memory = 100 * 1024 * 1024;  // 100 MB
+  constexpr size_t max_process_memory = 300 * 1024 * 1024;  // 300 MB
 
   bool lock_memory = false;
   if (argc > 1) {
@@ -138,33 +153,50 @@ int main(int argc, char * argv[])
     }
   }
 
+  // lock the memory
   if (lock_memory) {
-    if (configure_malloc_behavior()) {
+    bool memory_is_locked = configure_malloc_behavior();
+    if (memory_is_locked) {
       std::cout << "Memory locked" << std::endl;
-    } else {
-      return EXIT_FAILURE;
-    }
-    if (reserve_process_memory(process_max_dynamic_memory)) {
-      std::cout << "Reserved memory: " <<
-        std::to_string(process_max_dynamic_memory / (1024 * 1024)) << " MB" << std::endl;
-
-      std::cout << "Total memory process: " <<
-        std::to_string(get_process_memory() / 1024) << " MB" << std::endl;
     } else {
       return EXIT_FAILURE;
     }
   }
 
+  // Create nodes
   rclcpp::init(argc, argv);
-
   auto node = std::make_shared<MinimalPublisher>();
 
-  auto [minor, major] = get_new_page_faults();
-  RCLCPP_INFO(
-    node->get_logger(),
-    "Initial minor page faults: %d, Initial major page faults: %d", minor, major);
+  // Sleep required to avoid some initial minor page faults
+  // TODO(carlos): find out why we see minor page faults initially
+  // This could be caused by middleware threads being created concurrently
+  std::this_thread::sleep_for(500ms);
+
+  // reserve the memory
+  if (lock_memory) {
+    std::cout << "Memory to reserve: " <<
+              std::to_string(max_process_memory / (1024 * 1024)) << " MB" << std::endl;
+    print_process_memory("[Before reserving]");
+    auto current_process_memory = get_process_memory() * 1024;
+    if (current_process_memory > max_process_memory) {
+      std::cout << "Process memory higher than maximum memory to reserve: " << std::endl;
+      return EXIT_FAILURE;
+    }
+    auto additional_memory_to_reserve = max_process_memory - current_process_memory;
+    bool memory_is_reserved = reserve_process_memory(additional_memory_to_reserve);
+    if (!memory_is_reserved) {
+      return EXIT_FAILURE;
+    }
+  }
+
+  print_process_memory("[Before spin]");
+  print_page_faults("[Before spin]");
+  get_new_page_faults();  // init page fault count
 
   rclcpp::spin(node);
+
+  print_process_memory("[After spin]");
+  print_page_faults("[After spin]");
 
   rclcpp::shutdown();
   return 0;

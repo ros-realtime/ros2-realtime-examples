@@ -2,8 +2,9 @@
 
 ## Requirements 
 
-Adjust permissions for memory locking see (https://docs.ros.org/en/foxy/Tutorials/Real-Time-Programming.html#adjust-permissions-for-memory-locking)
+- Adjust permissions for memory locking see (https://docs.ros. org/en/foxy/Tutorials/Real-Time-Programming.html#adjust-permissions-for-memory-locking)
  or run as root
+- Install [stress-ng](https://wiki.ubuntu.com/Kernel/Reference/stress-ng)
 
 ## How to run
 
@@ -17,6 +18,15 @@ Locking the memory:
 
 ```bash
 $ ros2 run minimal_memory_lock minimal_memory_lock -m
+```
+
+You can use stress-ng to generate stress the memory and generate page faults. Run the following 
+command in another terminal before running the example:
+
+```bash
+$ stress-ng --fault 0 --perf -t 1m
+# for newer kernels
+$ stress-ng --userfaultfd 0 --perf -t 1m
 ```
 
 ## Resources
