@@ -61,8 +61,9 @@ public:
   }
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_configure(const rclcpp_lifecycle::State &) override
+  on_configure(const rclcpp_lifecycle::State & state) override
   {
+    RCLCPP_INFO(get_logger(), "on_configure() is called from state %s.", state.label().c_str());
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     auto timer_callback =
       [this]() -> void {
@@ -75,15 +76,13 @@ public:
       };
     timer_ = this->create_wall_timer(1s, timer_callback);
     timer_->cancel();
-
-    RCLCPP_INFO(get_logger(), "on_configure() is called.");
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   }
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_activate(const rclcpp_lifecycle::State &) override
+  on_activate(const rclcpp_lifecycle::State & state) override
   {
-    RCLCPP_INFO(get_logger(), "on_activate() is called.");
+    RCLCPP_INFO(get_logger(), "on_activate() is called from state %s.", state.label().c_str());
     RCLCPP_INFO(get_logger(), "waiting the subscription to match");
 
     if (!wait_for_subscription()) {
@@ -99,19 +98,19 @@ public:
   }
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_deactivate(const rclcpp_lifecycle::State &) override
+  on_deactivate(const rclcpp_lifecycle::State & state) override
   {
     timer_->cancel();
     publisher_->on_deactivate();
-    RCLCPP_INFO(get_logger(), "on_deactivate() is called.");
+    RCLCPP_INFO(get_logger(), "on deactivate is called from state %s.", state.label().c_str());
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   }
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_cleanup(const rclcpp_lifecycle::State &) override
+  on_cleanup(const rclcpp_lifecycle::State & state) override
   {
     timer_.reset();
-    RCLCPP_INFO(get_logger(), "on cleanup is called.");
+    RCLCPP_INFO(get_logger(), "on cleanup is called from state %s.", state.label().c_str());
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   }
 

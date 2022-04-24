@@ -47,12 +47,19 @@ public:
     return true;
   }
 
-  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_configure(const rclcpp_lifecycle::State &) override
+  void log_received_messages()
   {
-    // TODO(carlos): add size as parameter
-    constexpr std::size_t max_received_msgs = 10;
-    received_msgs.reserve(max_received_msgs);
+    std::for_each(
+      received_msgs_.begin(), received_msgs_.end(), [this](const
+      std_msgs::msg::String & msg) {
+        RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg.data.c_str());
+      });
+  }
+
+  rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
+  on_configure(const rclcpp_lifecycle::State & state) override
+  {
+    RCLCPP_INFO(get_logger(), "on_configure() is called from state %s.", state.label().c_str());
     subscription_ = this->create_subscription<std_msgs::msg::String>(
       "topic",
       10,
@@ -62,26 +69,42 @@ public:
           return;
         }
         // accumulate received msgs and deactivate when we are done
-        if (received_msgs.size() < max_received_msgs) {
-          received_msgs.push_back(*msg);
+        if (received_msgs_.size() < max_received_msgs_) {
+          received_msgs_.push_back(*msg);
         } else {
           this->deactivate();
         }
       });
-    RCLCPP_INFO(get_logger(), "on_configure() is called.");
+
+    if (!has_parameter("max_received_msgs")) {
+      max_received_msgs_ = declare_parameter("max_received_msgs", 5);
+      parameter_event_handler_ = std::make_shared<rclcpp::ParameterEventHandler>(this);
+      auto param_callback = [this](const rclcpp::Parameter & p) {
+          RCLCPP_INFO(this->get_logger(), "max_received_msgs set to: '%ld'", p.as_int());
+          max_received_msgs_ = static_cast<std::uint32_t>(p.as_int());
+        };
+      parameter_callback_handle_ =
+        parameter_event_handler_->add_parameter_callback("max_received_msgs", param_callback);
+    }
+
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   }
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_activate(const rclcpp_lifecycle::State &) override
+  on_activate(const rclcpp_lifecycle::State & state) override
   {
-    RCLCPP_INFO(get_logger(), "on_activate() is called.");
+    RCLCPP_INFO(get_logger(), "on_activate() is called from state %s.", state.label().c_str());
     RCLCPP_INFO(get_logger(), "waiting the publisher to match");
 
+    received_msgs_.clear();
+    received_msgs_.reserve(max_received_msgs_);
     if (!wait_for_publisher()) {
       return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
     }
     RCLCPP_INFO(get_logger(), "publisher matched");
+    RCLCPP_INFO(
+      get_logger(), "Node will be deactivated after receiving %ld messages",
+      max_received_msgs_);
 
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   }
@@ -90,21 +113,15 @@ public:
   on_deactivate(const rclcpp_lifecycle::State & state) override
   {
     RCLCPP_INFO(get_logger(), "on deactivate is called from state %s.", state.label().c_str());
-    // log all the received messages
-    std::for_each(
-      received_msgs.begin(), received_msgs.end(), [this](const
-      std_msgs::msg::String & msg) {
-        RCLCPP_INFO(this->get_logger(), "I heard: '%s'", msg.data.c_str());
-      });
-    received_msgs.clear();
+    log_received_messages();
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   }
 
   rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
-  on_cleanup(const rclcpp_lifecycle::State &) override
+  on_cleanup(const rclcpp_lifecycle::State & state) override
   {
     subscription_.reset();
-    RCLCPP_INFO(get_logger(), "on cleanup is called.");
+    RCLCPP_INFO(get_logger(), "on cleanup is called from state %s.", state.label().c_str());
     return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS;
   }
 
@@ -117,7 +134,10 @@ public:
 
 private:
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr subscription_;
-  std::vector<std_msgs::msg::String> received_msgs;
+  std::vector<std_msgs::msg::String> received_msgs_;
+  std::size_t max_received_msgs_;
+  std::shared_ptr<rclcpp::ParameterEventHandler> parameter_event_handler_;
+  std::shared_ptr<rclcpp::ParameterCallbackHandle> parameter_callback_handle_;
 };
 
 int main(int argc, char * argv[])
