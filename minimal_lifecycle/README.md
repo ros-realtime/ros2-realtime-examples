@@ -35,5 +35,5 @@ $ ros2 lifecycle set /listener activate
 
 ## Resources
 
-- http://design.ros2.org/articles/node_lifecycle.html
-- https://github.com/ros2/demos/blob/master/lifecycle/README.rst
+- [http://design.ros2.org/articles/node_lifecycle.html](http://design.ros2.org/articles/node_lifecycle.html)
+- [https://github.com/ros2/demos/blob/master/lifecycle/README.rst](https://github.com/ros2/demos/blob/master/lifecycle/README.rst)

@@ -62,12 +62,12 @@ Use `htop` or `ps` to observe the priorities of the threads.
 
 ## Resources
 
-- https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start
-- https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base
-- https://linux.die.net/man/3/pthread_setschedparam
-- https://linux.die.net/man/3/pthread_create
+- [https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start](https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start)
+- [https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base](https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base)
+- [https://linux.die.net/man/3/pthread_setschedparam](https://linux.die.net/man/3/pthread_setschedparam)
+- [https://linux.die.net/man/3/pthread_create](https://linux.die.net/man/3/pthread_create)
 - Callback groups executor - Ralph Lange [video](https://www.youtube.com/watch?v=5Sd5bvvZeb0
 ), [slides](https://www.apex.ai/_files/ugd/984e93_f3791ae0711042a883bfc40f827d6268.pdf)
-- https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor
-- https://discourse.ros.org/t/ros2-generated-child-thread-scheduling-policy-affects-timers/14212
-- https://discourse.ros.org/t/experiment-to-inhibit-dds-and-ros2-child-threads/14313
+- [https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor](https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor)
+- [https://discourse.ros.org/t/ros2-generated-child-thread-scheduling-policy-affects-timers/14212](https://discourse.ros.org/t/ros2-generated-child-thread-scheduling-policy-affects-timers/14212)
+- [https://discourse.ros.org/t/experiment-to-inhibit-dds-and-ros2-child-threads/14313](https://discourse.ros.org/t/experiment-to-inhibit-dds-and-ros2-child-threads/14313)
