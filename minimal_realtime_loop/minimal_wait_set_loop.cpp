@@ -37,6 +37,7 @@ int main(int argc, char * argv[])
     std::array<rclcpp::ClientBase::SharedPtr, 0>{},
     std::array<rclcpp::ServiceBase::SharedPtr, 0>{},
     std::array<StaticWaitsetWithSub::WaitableEntry, 0>{});
+  size_t iteration{0};
 
   while (rclcpp::ok()) {
     auto wait_result = static_wait_set.wait(100ms);
@@ -45,14 +46,15 @@ int main(int argc, char * argv[])
         std_msgs::msg::String msg;
         rclcpp::MessageInfo msg_info;
         if (subscription->take(msg, msg_info)) {
-          RCLCPP_INFO(node->get_logger(), "I heard '%s'", msg.data.c_str());
+          RCLCPP_INFO(node->get_logger(), "%ld | I heard '%s'", iteration, msg.data.c_str());
         } else {
-          RCLCPP_INFO(node->get_logger(), "No message");
+          RCLCPP_INFO(node->get_logger(), "%ld | No message", iteration);
         }
       }
     } else if (wait_result.kind() == rclcpp::WaitResultKind::Timeout) {
-      RCLCPP_INFO(node->get_logger(), "wait-set waiting failed with timeout");
+      RCLCPP_INFO(node->get_logger(), "%ld | wait-set timeout", iteration);
     }
+    iteration++;
   }
 
   rclcpp::shutdown();

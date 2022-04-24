@@ -31,16 +31,22 @@ int main(int argc, char * argv[])
   auto subscription = node->create_subscription<std_msgs::msg::String>("topic", 10, do_nothing);
   std_msgs::msg::String msg;
   rclcpp::MessageInfo msg_info;
+  size_t iteration{0};
   std::chrono::time_point<std::chrono::steady_clock> wake_up_time{std::chrono::steady_clock::now()};
   std::chrono::milliseconds period{100};
 
   while (rclcpp::ok()) {
-    if (subscription->take(msg, msg_info)) {
-      RCLCPP_INFO(node->get_logger(), "I heard '%s'", msg.data.c_str());
-    } else {
-      RCLCPP_INFO(node->get_logger(), "No message");
+    bool data_was_taken{false};
+    // take all the available messages
+    while (subscription->take(msg, msg_info)) {
+      RCLCPP_INFO(node->get_logger(), "%ld | I heard '%s'", iteration, msg.data.c_str());
+      data_was_taken = true;
+    }
+    if (!data_was_taken) {
+      RCLCPP_INFO(node->get_logger(), "%ld | No message", iteration);
     }
 
+    iteration++;
     auto now = std::chrono::steady_clock::now();
     while (wake_up_time < now) {
       wake_up_time += period;
