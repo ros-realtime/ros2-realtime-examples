@@ -17,7 +17,7 @@ $ ros2 run minimal_memory_lock minimal_memory_lock
 Locking the memory:
 
 ```bash
-$ ros2 run minimal_memory_lock minimal_memory_lock -m
+$ ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --sleep --stacksize 100
 ```
 
 You can use stress-ng to generate stress the memory and generate page faults. Run the following 

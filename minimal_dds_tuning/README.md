@@ -30,7 +30,7 @@ General
 
 rmw_fastrtps
 - [https://github.com/ros2/rmw_fastrtps](https://github.com/ros2/rmw_fastrtps)
-- ROSCON 2017 Vancouver: ROS2 Fine Tunning ([slides](https://roscon.ros.org/2017/presentations/ROSCon%202017%20ROS2%20Fine%20Tuning.pdf))
+- ROSCon 2017 Vancouver: ROS2 Fine Tunning ([slides](https://roscon.ros.org/2017/presentations/ROSCon%202017%20ROS2%20Fine%20Tuning.pdf))
 - ROSCon 2019 Macau: ROS2 Real-Time Behavior: Static Memory Allocation ([video](https://vimeo.com/379127767))
 - [https://fast-rtps.docs.eprosima.com/en/v1.9.0/realtime.html#tuning-allocations](https://fast-rtps.docs.eprosima.com/en/v1.9.0/realtime.html#tuning-allocations)
 - [https://fast-rtps.docs.eprosima.com/en/v1.9.0/realtime.html](https://fast-rtps.docs.eprosima.com/en/v1.9.0/realtime.html)

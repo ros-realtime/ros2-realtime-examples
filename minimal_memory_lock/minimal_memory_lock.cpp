@@ -25,6 +25,8 @@
 #include <unistd.h>
 #include <pthread.h>
 
+#include <rcutils/cmdline_parser.h>
+
 #include <chrono>
 #include <memory>
 #include <string>
@@ -32,11 +34,24 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-
 using namespace std::chrono_literals;
+
+static const char * OPTION_LOCK_MEMORY = "--lock-memory";
+static const char * OPTION_MEMORY_PREALLOCATION = "--memory-preallocation";
+static const char * OPTION_THREAD_STACK_SIZE = "--stacksize";
+static const char * OPTION_USE_SLEEP = "--sleep";
 
 namespace
 {
+void print_usage()
+{
+  printf("\nUsage:\n");
+  printf("%s : lock memory\n", OPTION_LOCK_MEMORY);
+  printf("%s : preallocate memory for the process (MB)\n", OPTION_MEMORY_PREALLOCATION);
+  printf("%s : set the default thread stack size (KB)\n", OPTION_THREAD_STACK_SIZE);
+  printf("%s : use sleep between node creation and memory lock\n", OPTION_USE_SLEEP);
+}
+
 bool configure_malloc_behavior()
 {
   // Lock all current and future pages
@@ -106,7 +121,7 @@ std::size_t get_process_memory()
 void print_page_faults(const std::string & prefix)
 {
   auto [minor, major] = get_page_faults();
-  printf("%s Minor page faults: %d, Major page faults: %d\n", prefix.c_str(), minor, major);
+  printf("%s [Minor: %d, Major: %d]\n", prefix.c_str(), minor, major);
 }
 
 void print_process_memory(const std::string & prefix)
@@ -155,8 +170,7 @@ public:
         this->publisher_->publish(message);
         auto [minor, major] = get_new_page_faults();
         RCLCPP_INFO(
-          this->get_logger(),
-          "New minor page faults: %d, New major page faults: %d", minor, major);
+          this->get_logger(), "Page faults during spin: [minor: %d, major: %d]", minor, major);
       };
     timer_ = this->create_wall_timer(500ms, timer_callback);
   }
@@ -169,18 +183,41 @@ private:
 
 int main(int argc, char * argv[])
 {
-  constexpr size_t max_process_memory = 25 * 1024 * 1024;  // 300 MB
-  constexpr size_t stack_size = 100 * 1024;  // 100 kB
+  // Force flush of the stdout buffer.
+  setvbuf(stdout, NULL, _IONBF, BUFSIZ);
 
-  bool lock_memory = false;
-  if (argc > 1) {
-    if (std::string(argv[1]) == "-m") {
-      lock_memory = true;
-    }
+  // Argument count and usage
+  if (rcutils_cli_option_exist(argv, argv + argc, "-h")) {
+    print_usage();
+    return 0;
   }
 
-  // Change a new default thread stack size to reduce memory foot print
-  set_default_thread_stacksize(stack_size);
+  // Configuration variables
+  size_t max_process_memory = 0;
+  size_t stack_size = 0;
+  bool lock_memory = false;
+  bool use_sleep = false;
+
+  // Optional argument parsing
+  if (rcutils_cli_option_exist(argv, argv + argc, OPTION_LOCK_MEMORY)) {
+    lock_memory = true;
+  }
+  if (rcutils_cli_option_exist(argv, argv + argc, OPTION_MEMORY_PREALLOCATION)) {
+    max_process_memory = 1024 * 1024 *
+      std::stoul(rcutils_cli_get_option(argv, argv + argc, OPTION_MEMORY_PREALLOCATION));
+  }
+  if (rcutils_cli_option_exist(argv, argv + argc, OPTION_THREAD_STACK_SIZE)) {
+    stack_size = 1024 *
+      std::stoul(rcutils_cli_get_option(argv, argv + argc, OPTION_THREAD_STACK_SIZE));
+  }
+  if (rcutils_cli_option_exist(argv, argv + argc, OPTION_USE_SLEEP)) {
+    use_sleep = true;
+  }
+
+  // Change a new default thread stack size to reduce memory foot-print
+  if (stack_size > 0) {
+    set_default_thread_stacksize(stack_size);
+  }
 
   print_process_memory("Process memory before node creation: ");
 
@@ -191,7 +228,10 @@ int main(int argc, char * argv[])
   // Sleep required to avoid some initial minor page faults
   // TODO(carlos): find out why we see minor page faults initially
   // This could be caused by middleware threads being created concurrently
-  std::this_thread::sleep_for(500ms);
+  if (use_sleep) {
+    std::cout << "Sleeping here" << std::endl;
+    std::this_thread::sleep_for(500ms);
+  }
 
   if (lock_memory) {
     print_process_memory("Process memory before locking: ");
@@ -202,7 +242,8 @@ int main(int argc, char * argv[])
       return EXIT_FAILURE;
     }
     print_process_memory("Process memory after locking: ");
-
+  }
+  if (max_process_memory > 0) {
     std::cout << "Memory to reserve: " <<
       std::to_string(max_process_memory / (1024 * 1024)) << " MB" << std::endl;
     auto current_process_memory = get_process_memory() * 1024;
@@ -219,13 +260,13 @@ int main(int argc, char * argv[])
   }
 
   print_process_memory("Process memory before spin: ");
-  print_page_faults("Page faults before spin");
+  print_page_faults("Total page faults before spin");
   get_new_page_faults();  // init page fault count
 
   rclcpp::spin(node);
 
   print_process_memory("Process memory after spin: ");
-  print_page_faults("Page faults after spin");
+  print_page_faults("Total page faults after spin");
 
   rclcpp::shutdown();
   return 0;
