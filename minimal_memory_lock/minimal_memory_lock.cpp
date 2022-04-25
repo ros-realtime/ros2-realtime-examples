@@ -111,7 +111,32 @@ void print_page_faults(const std::string & prefix)
 
 void print_process_memory(const std::string & prefix)
 {
-  printf("%s Total process memory: %ld MB\n", prefix.c_str(), get_process_memory() / 1024);
+  printf("%s %ld MB\n", prefix.c_str(), get_process_memory() / 1024);
+}
+
+void set_default_thread_stacksize(size_t stacksize)
+{
+  pthread_attr_t attr;
+  int ret;
+  ret = pthread_getattr_default_np(&attr);
+  if (ret != 0) {
+    std::cerr << "Failed to call pthread_getattr_default_np. Error code: " <<
+      strerror(errno) << std::endl;
+    return;
+  }
+
+  ret = pthread_attr_setstacksize(&attr, stacksize);
+  if (ret != 0) {
+    std::cerr << "Failed to call pthread_attr_setstacksize. Error code: " <<
+      strerror(errno) << std::endl;
+    return;
+  }
+  ret = pthread_setattr_default_np(&attr);
+  if (ret != 0) {
+    std::cerr << "Failed to call pthread_setattr_default_np. Error code: " <<
+      strerror(errno) << std::endl;
+    return;
+  }
 }
 
 }  // namespace
@@ -144,7 +169,8 @@ private:
 
 int main(int argc, char * argv[])
 {
-  constexpr size_t max_process_memory = 300 * 1024 * 1024;  // 300 MB
+  constexpr size_t max_process_memory = 25 * 1024 * 1024;  // 300 MB
+  constexpr size_t stack_size = 100 * 1024;  // 100 kB
 
   bool lock_memory = false;
   if (argc > 1) {
@@ -153,15 +179,10 @@ int main(int argc, char * argv[])
     }
   }
 
-  // lock the memory
-  if (lock_memory) {
-    bool memory_is_locked = configure_malloc_behavior();
-    if (memory_is_locked) {
-      std::cout << "Memory locked" << std::endl;
-    } else {
-      return EXIT_FAILURE;
-    }
-  }
+  // Change a new default thread stack size to reduce memory foot print
+  set_default_thread_stacksize(stack_size);
+
+  print_process_memory("Process memory before node creation: ");
 
   // Create nodes
   rclcpp::init(argc, argv);
@@ -172,11 +193,18 @@ int main(int argc, char * argv[])
   // This could be caused by middleware threads being created concurrently
   std::this_thread::sleep_for(500ms);
 
-  // reserve the memory
   if (lock_memory) {
+    print_process_memory("Process memory before locking: ");
+    bool memory_is_locked = configure_malloc_behavior();
+    if (memory_is_locked) {
+      std::cout << "Memory locked" << std::endl;
+    } else {
+      return EXIT_FAILURE;
+    }
+    print_process_memory("Process memory after locking: ");
+
     std::cout << "Memory to reserve: " <<
-              std::to_string(max_process_memory / (1024 * 1024)) << " MB" << std::endl;
-    print_process_memory("[Before reserving]");
+      std::to_string(max_process_memory / (1024 * 1024)) << " MB" << std::endl;
     auto current_process_memory = get_process_memory() * 1024;
     if (current_process_memory > max_process_memory) {
       std::cout << "Process memory higher than maximum memory to reserve: " << std::endl;
@@ -187,16 +215,17 @@ int main(int argc, char * argv[])
     if (!memory_is_reserved) {
       return EXIT_FAILURE;
     }
+    print_process_memory("Process memory after memory pool reservation: ");
   }
 
-  print_process_memory("[Before spin]");
-  print_page_faults("[Before spin]");
+  print_process_memory("Process memory before spin: ");
+  print_page_faults("Page faults before spin");
   get_new_page_faults();  // init page fault count
 
   rclcpp::spin(node);
 
-  print_process_memory("[After spin]");
-  print_page_faults("[After spin]");
+  print_process_memory("Process memory after spin: ");
+  print_page_faults("Page faults after spin");
 
   rclcpp::shutdown();
   return 0;
