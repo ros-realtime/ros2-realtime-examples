@@ -1,0 +1,37 @@
+name: build and test
+on:
+  push:
+    branches: rolling
+  pull_request:
+    branches: rolling
+jobs:
+  build-and-test:
+    runs-on: [ubuntu-18.04]
+    strategy:
+      fail-fast: false
+      matrix:
+        ros_distribution:
+          - galactic
+        include:
+          # Galactic Geochelone (May 2021 - November 2022)
+          - docker_image: ubuntu:focal
+            ros_distribution: galactic
+            ros_version: 2
+    container:
+      image: ${{ matrix.docker_image }}
+    steps:
+      - name: Setup ROS 2
+        uses: ros-tooling/setup-ros@v0.3
+        with:
+          required-ros-distributions: ${{ matrix.ros_distribution }}
+      - name: Run Tests
+        uses: ros-tooling/action-ros-ci@v0.2
+        with:
+          package-name: ros2_realtime_examples
+          target-ros2-distro: ${{ matrix.ros_distribution }}
+      - name: Upload Logs
+        uses: actions/upload-artifact@v1
+        with:
+          name: colcon-logs
+          path: ros_ws/log
+        if: always()
