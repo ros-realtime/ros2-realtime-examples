@@ -5,9 +5,10 @@ create real-time applications.
 
 * [minimal_memory_lock](minimal_memory_lock/README.md): shows how to lock the
   process memory to avoid memory page faults
-  
+* [minimal_scheduling](minimal_scheduling/README.md): shows how to configure the thread(s)
+scheduling policy and priority
+
 TODO: Add other packages after review (currently in rolling-experimental branch): 
-* minimal_scheduling: shows how to configure the thread(s) scheduling policy and priority (TODO: add SCHED_DEADLINE example)
 * minimal_cpu_affinity: shows how to set the process and threads CPU affinity
 * minimal_realtime_loop: shows different approaches to created typical real-time time based loops
 * minimal_deadline_qos: shows how to use the DDS deadline QoS policy
