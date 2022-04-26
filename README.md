@@ -3,13 +3,13 @@
 Collection of ROS 2 minimal examples showing how to leverage different POSIX and ROS 2 features to
 create real-time applications.
 
-
+* [minimal_memory_lock](minimal_memory_lock/README.md): shows how to lock the process memory and
+  pre-allocate dynamic memory to avoid memory page faults
+  
 TODO: Add other packages after review (currently in rolling-experimental branch): 
 * minimal_scheduling: shows how to configure the thread(s) scheduling policy and priority (TODO: add SCHED_DEADLINE example)
 * minimal_cpu_affinity: shows how to set the process and threads CPU affinity
 * minimal_realtime_loop: shows different approaches to created typical real-time time based loops
-* minimal_memory_lock: shows how to lock the process memory and
- pre-allocate dynamic memory to avoid memory page faults
 * minimal_deadline_qos: shows how to use the DDS deadline QoS policy
 * minimal_lifecycle: shows how to use node lifecycle to separate configuration and runtime
  real-time phases
