@@ -7,6 +7,8 @@ create real-time applications.
   process memory to avoid memory page faults
 * [minimal_scheduling](minimal_scheduling/README.md): shows how to configure the thread(s)
 scheduling policy and priority
+* [minimal_data_sharing](minimal_data_sharing/README.md): shows how to use different data sharing approached to avoid
+  blocking calls when sharing data between real-time and non real-time threads
 
 TODO: Add other packages after review (currently in rolling-experimental branch): 
 * minimal_cpu_affinity: shows how to set the process and threads CPU affinity
@@ -19,7 +21,6 @@ does not allocate dynamic memory
 * minimal_memory_allocator: shows how to use different memory strategies to avoid dynamic
  memory allocations during the runtime phase
 * minimal_loaned_messages: shows how to use loaned messages APIs
-* minimal_data_sharing: shows how to use different data sharing approached to avoid
  blocking calls when sharing data between real-time and non real-time threads 
 * minimal_dds_tuning: shows how to use DDS specific configurations to tune real-time
  related settings (TODO: add XML profiles for more DDS implementations)
