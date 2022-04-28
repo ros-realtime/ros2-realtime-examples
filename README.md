@@ -5,6 +5,9 @@ create real-time applications.
 
 
 TODO: Add other packages after review (currently in rolling-experimental branch): 
+* minimal_scheduling: shows how to configure the thread(s) scheduling policy and priority (TODO: add SCHED_DEADLINE example)
+* minimal_cpu_affinity: shows how to set the process and threads CPU affinity
+* minimal_realtime_loop: shows different approaches to created typical real-time time based loops
 * minimal_memory_lock: shows how to lock the process memory and
  pre-allocate dynamic memory to avoid memory page faults
 * minimal_deadline_qos: shows how to use the DDS deadline QoS policy
