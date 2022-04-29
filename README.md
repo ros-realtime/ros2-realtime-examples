@@ -50,7 +50,7 @@ Use [rosdep](http://wiki.ros.org/ROS/Tutorials/rosdep) to install the required d
 
 ```bash
 $ cd ros2_realtime_examples_ws
-$ rosdep install --from-paths src/ --ignore-src
+$ rosdep install --from-paths src/ --ignore-src --rosdistro=rolling
 ```
 
 ### Build
