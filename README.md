@@ -3,8 +3,8 @@
 Collection of ROS 2 minimal examples showing how to leverage different POSIX and ROS 2 features to
 create real-time applications.
 
-* [minimal_memory_lock](minimal_memory_lock/README.md): shows how to lock the process memory and
-  pre-allocate dynamic memory to avoid memory page faults
+* [minimal_memory_lock](minimal_memory_lock/README.md): shows how to lock the
+  process memory to avoid memory page faults
   
 TODO: Add other packages after review (currently in rolling-experimental branch): 
 * minimal_scheduling: shows how to configure the thread(s) scheduling policy and priority (TODO: add SCHED_DEADLINE example)
