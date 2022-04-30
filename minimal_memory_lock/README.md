@@ -61,8 +61,8 @@ Total page faults before spin [Minor: 789, Major: 0]
 [WARN] [1651228554.331644228] [minimal_publisher]: New page faults during spin: [minor: 1, major: 0]
 ```
 
-[![asciicast](https://asciinema.org/a/v43o9lPRoNHXJnA6dBgTgEcdu.svg)](https://asciinema.org/a/v43o9lPRoNHXJnA6dBgTgEcdu)
 <script id="asciicast-v43o9lPRoNHXJnA6dBgTgEcdu" src="https://asciinema.org/a/v43o9lPRoNHXJnA6dBgTgEcdu.js" async></script>
+
 
 Using the `--allocate-in-node` we can simulate the node allocating some memory
 on the heap when spinning.
@@ -85,8 +85,8 @@ Total page faults before spin [Minor: 790, Major: 0]
 [WARN] [1651228797.773109372] [minimal_publisher]: New page faults during spin: [minor: 12800, major: 0]
 ```
 
-[![asciicast](https://asciinema.org/a/cSikCOB9dXNIV3uFujynLZlUg.svg)](https://asciinema.org/a/cSikCOB9dXNIV3uFujynLZlUg)
 <script id="asciicast-cSikCOB9dXNIV3uFujynLZlUg" src="https://asciinema.org/a/cSikCOB9dXNIV3uFujynLZlUg.js" async></script>
+
 
 ### Locking the memory
 
@@ -110,8 +110,8 @@ Total page faults before spin [Minor: 20439, Major: 0]
 [INFO] [1651229007.707527666] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
 ```
 
-[![asciicast](https://asciinema.org/a/BmCYNbEs101fZcVc77MgC5NGy.svg)](https://asciinema.org/a/BmCYNbEs101fZcVc77MgC5NGy)
 <script id="asciicast-BmCYNbEs101fZcVc77MgC5NGy" src="https://asciinema.org/a/BmCYNbEs101fZcVc77MgC5NGy.js" async></script>
+
 
 In the applications allocate memory dynamically during runtime we may see some
 page faults the first time the memory is allocated. After that, because we
@@ -133,8 +133,8 @@ Total page faults before spin [Minor: 20444, Major: 0]
 [INFO] [1651229443.395399625] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
 ```
 
-[![asciicast](https://asciinema.org/a/i4dV7qSYqgCmLGKdKO0j1oi1i.svg)](https://asciinema.org/a/i4dV7qSYqgCmLGKdKO0j1oi1i)
 <script id="asciicast-i4dV7qSYqgCmLGKdKO0j1oi1i" src="https://asciinema.org/a/i4dV7qSYqgCmLGKdKO0j1oi1i.js" async></script>
+
 
 One option is to pre-allocate some memory, so we don't get page faults the
 first time the memory is allocated in runtime. Using the option
@@ -164,8 +164,8 @@ Total page faults before spin [Minor: 35294, Major: 0]
 [INFO] [1651229846.717899510] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
 ```
 
-[![asciicast](https://asciinema.org/a/49s48ZK2ZLzpoQAhheq16XXo0.svg)](https://asciinema.org/a/49s48ZK2ZLzpoQAhheq16XXo0)
 <script id="asciicast-49s48ZK2ZLzpoQAhheq16XXo0" src="https://asciinema.org/a/49s48ZK2ZLzpoQAhheq16XXo0.js" async></script>
+
 
 ### Tuning the thread stack size
 
@@ -194,8 +194,8 @@ Total page faults before spin [Minor: 2228, Major: 0]
 [INFO] [1651230229.554856423] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
 ```
 
-[![asciicast](https://asciinema.org/a/WicxfQ7hM52VMqKDfcFgM5LFk.svg)](https://asciinema.org/a/WicxfQ7hM52VMqKDfcFgM5LFk)
 <script id="asciicast-WicxfQ7hM52VMqKDfcFgM5LFk" src="https://asciinema.org/a/WicxfQ7hM52VMqKDfcFgM5LFk.js" async></script>
+
 
 We reduced the total memory used by the process. However, this
 configuration should be done for each thread knowing which stack size is
