@@ -61,6 +61,9 @@ Total page faults before spin [Minor: 789, Major: 0]
 [WARN] [1651228554.331644228] [minimal_publisher]: New page faults during spin: [minor: 1, major: 0]
 ```
 
+[![asciicast](https://asciinema.org/a/v43o9lPRoNHXJnA6dBgTgEcdu.svg)](https://asciinema.org/a/v43o9lPRoNHXJnA6dBgTgEcdu)
+<script id="asciicast-v43o9lPRoNHXJnA6dBgTgEcdu" src="https://asciinema.org/a/v43o9lPRoNHXJnA6dBgTgEcdu.js" async></script>
+
 Using the `--allocate-in-node` we can simulate the node allocating some memory
 on the heap when spinning.
 
@@ -68,7 +71,7 @@ If we allocate 50 MBytes each time we can see page faults generated more
 frequently:
 
 ```bash
-ros2 run minimal_memory_lock minimal_memory_lock --allocate-in-node 50
+$ ros2 run minimal_memory_lock minimal_memory_lock --allocate-in-node 50
 Process memory before node creation:  13 MB
 Process memory is not being locked. Memory page faults may occur.
 Process memory before spin:  13 MB
@@ -81,6 +84,9 @@ Total page faults before spin [Minor: 790, Major: 0]
 [WARN] [1651228797.271399242] [minimal_publisher]: New page faults during spin: [minor: 12800, major: 0]
 [WARN] [1651228797.773109372] [minimal_publisher]: New page faults during spin: [minor: 12800, major: 0]
 ```
+
+[![asciicast](https://asciinema.org/a/cSikCOB9dXNIV3uFujynLZlUg.svg)](https://asciinema.org/a/cSikCOB9dXNIV3uFujynLZlUg)
+<script id="asciicast-cSikCOB9dXNIV3uFujynLZlUg" src="https://asciinema.org/a/cSikCOB9dXNIV3uFujynLZlUg.js" async></script>
 
 ### Locking the memory
 
@@ -104,12 +110,15 @@ Total page faults before spin [Minor: 20439, Major: 0]
 [INFO] [1651229007.707527666] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
 ```
 
+[![asciicast](https://asciinema.org/a/BmCYNbEs101fZcVc77MgC5NGy.svg)](https://asciinema.org/a/BmCYNbEs101fZcVc77MgC5NGy)
+<script id="asciicast-BmCYNbEs101fZcVc77MgC5NGy" src="https://asciinema.org/a/BmCYNbEs101fZcVc77MgC5NGy.js" async></script>
+
 In the applications allocate memory dynamically during runtime we may see some
 page faults the first time the memory is allocated. After that, because we
 are using `MCL_FUTURE` that memory will be locked too.
 
 ```bash
-ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --allocate-in-node 50
+$ ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --allocate-in-node 50
 Process memory before node creation:  13 MB
 Sleeping here so all the middleware threads are created
 Process memory before locking:  13 MB
@@ -124,6 +133,9 @@ Total page faults before spin [Minor: 20444, Major: 0]
 [INFO] [1651229443.395399625] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
 ```
 
+[![asciicast](https://asciinema.org/a/i4dV7qSYqgCmLGKdKO0j1oi1i.svg)](https://asciinema.org/a/i4dV7qSYqgCmLGKdKO0j1oi1i)
+<script id="asciicast-i4dV7qSYqgCmLGKdKO0j1oi1i" src="https://asciinema.org/a/i4dV7qSYqgCmLGKdKO0j1oi1i.js" async></script>
+
 One option is to pre-allocate some memory, so we don't get page faults the
 first time the memory is allocated in runtime. Using the option
 `--memory-preallocation` we can specify the total amount we want to
@@ -134,7 +146,7 @@ locked on the node construction, and the additional memory that will be
 allocated in runtime.
 
 ```bash
-ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --allocate-in-node 50 --memory-preallocation 150
+$ ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --allocate-in-node 50 --memory-preallocation 150
 Process memory before node creation:  13 MB
 Sleeping here so all the middleware threads are created
 Process memory before locking:  13 MB
@@ -152,6 +164,9 @@ Total page faults before spin [Minor: 35294, Major: 0]
 [INFO] [1651229846.717899510] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
 ```
 
+[![asciicast](https://asciinema.org/a/49s48ZK2ZLzpoQAhheq16XXo0.svg)](https://asciinema.org/a/49s48ZK2ZLzpoQAhheq16XXo0)
+<script id="asciicast-49s48ZK2ZLzpoQAhheq16XXo0" src="https://asciinema.org/a/49s48ZK2ZLzpoQAhheq16XXo0.js" async></script>
+
 ### Tuning the thread stack size
 
 In the previous examples we saw how process memory after locking is
@@ -164,7 +179,7 @@ For **demonstration purposes** we change the default stack size of the threads
 using the `--stacksize` option.
 
 ```bash
-ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --stacksize 100
+$ ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --stacksize 100
 Process memory before node creation:  13 MB
 Sleeping here so all the middleware threads are created
 Process memory before locking:  13 MB
@@ -179,6 +194,9 @@ Total page faults before spin [Minor: 2228, Major: 0]
 [INFO] [1651230229.554856423] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
 ```
 
+[![asciicast](https://asciinema.org/a/WicxfQ7hM52VMqKDfcFgM5LFk.svg)](https://asciinema.org/a/WicxfQ7hM52VMqKDfcFgM5LFk)
+<script id="asciicast-WicxfQ7hM52VMqKDfcFgM5LFk" src="https://asciinema.org/a/WicxfQ7hM52VMqKDfcFgM5LFk.js" async></script>
+
 We reduced the total memory used by the process. However, this
 configuration should be done for each thread knowing which stack size is
 needed. Otherwise, we might see a stack overflow. Some middleware
@@ -192,25 +210,6 @@ created yet, and we will see some page faults happening during the spin.
 
 You can observe this by using the `--no-sleep` option. You might have to
 use some memory stress and run the example several times to observe this issue.
-
-```bash
-ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --no-wait --memory-preallocation 150
-Process memory before node creation:  13 MB
-Process memory before locking:  13 MB
-Process memory locked
-Process memory after locking:  92 MB
-Total memory pool to preallocate: 150 MB
-Additional memory to reserve: 57
-Process memory after memory pool reservation:  150 MB
-Process memory before spin:  150 MB
-Total page faults before spin [Minor: 35143, Major: 0]
-[WARN] [1651230838.192971118] [minimal_publisher]: New page faults during spin: [minor: 66, major: 0]
-[INFO] [1651230838.693119777] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-[INFO] [1651230839.193148725] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-[INFO] [1651230839.692963505] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-[INFO] [1651230840.192955358] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-[INFO] [1651230840.692954400] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-```
 
 ## Resources
 
