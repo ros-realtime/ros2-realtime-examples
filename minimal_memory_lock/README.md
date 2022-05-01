@@ -179,22 +179,29 @@ For **demonstration purposes** we change the default stack size of the threads
 using the `--stacksize` option.
 
 ```bash
-$ ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --stacksize 100
+$ ros2 run minimal_memory_lock minimal_memory_lock --lock-memory --stacksize 200
 Process memory before node creation:  13 MB
 Sleeping here so all the middleware threads are created
 Process memory before locking:  13 MB
 Process memory locked
-Process memory after locking:  20 MB
-Process memory before spin:  20 MB
-Total page faults before spin [Minor: 2228, Major: 0]
-[INFO] [1651230227.557519298] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-[INFO] [1651230228.054858822] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-[INFO] [1651230228.555020229] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-[INFO] [1651230229.054889267] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
-[INFO] [1651230229.554856423] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+Process memory after locking:  18 MB
+Process memory before spin:  18 MB
+Total page faults before spin [Minor: 2350, Major: 0]
+[INFO] [1651427649.910823256] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+[INFO] [1651427650.396723160] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+[INFO] [1651427650.896730277] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+[INFO] [1651427651.396724911] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+[INFO] [1651427651.896710860] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+[INFO] [1651427652.396718902] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+[INFO] [1651427652.896704369] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+[INFO] [1651427653.396709113] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+[INFO] [1651427653.896919652] [minimal_publisher]: New page faults during spin: [minor: 0, major: 0]
+^C[INFO] [1651427654.367910536] [rclcpp]: signal_handler(signal_value=2)
+Process memory after spin:  18 MB
+Total page faults after spin [Minor: 2383, Major: 0]
 ```
 
-<script id="asciicast-WicxfQ7hM52VMqKDfcFgM5LFk" src="https://asciinema.org/a/WicxfQ7hM52VMqKDfcFgM5LFk.js" async></script>
+<script id="asciicast-ZdG6fcc5M0pZgyqNg5WQWrMFY" src="https://asciinema.org/a/ZdG6fcc5M0pZgyqNg5WQWrMFY.js" async></script>
 
 
 We reduced the total memory used by the process. However, this
