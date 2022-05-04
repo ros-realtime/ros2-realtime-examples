@@ -26,7 +26,7 @@ struct PageFaults
   std::int64_t major{0};
 };
 
-std::size_t get_process_memory(__rusage_who who = RUSAGE_SELF) noexcept
+std::size_t get_process_memory(int who = RUSAGE_SELF) noexcept
 {
   struct rusage rusage {};
   getrusage(who, &rusage);
@@ -38,7 +38,7 @@ void print_process_memory(const std::string & log_text) noexcept
   printf("%s %ld MB\n", log_text.c_str(), get_process_memory() / 1024);
 }
 
-PageFaults get_total_page_faults(__rusage_who who = RUSAGE_SELF) noexcept
+PageFaults get_total_page_faults(int who = RUSAGE_SELF) noexcept
 {
   struct rusage rusage {};
   getrusage(who, &rusage);
@@ -55,7 +55,7 @@ void print_page_faults(const std::string & log_text) noexcept
 class PageFaultCounter
 {
 public:
-  explicit PageFaultCounter(__rusage_who who = RUSAGE_SELF)
+  explicit PageFaultCounter(int who = RUSAGE_SELF)
   : who_{who} {}
 
   void reset() noexcept
@@ -75,7 +75,7 @@ public:
 
 private:
   PageFaults page_faults_previous_;
-  const __rusage_who who_;
+  const int who_;
 };
 
 #endif  // MINIMAL_MEMORY_LOCK__RUSAGE_UTILS_HPP_
