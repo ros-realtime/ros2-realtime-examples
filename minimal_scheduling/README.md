@@ -30,7 +30,7 @@ For this example, we will be configuring the main thread scheduling policy of th
 where the node is spinning. In this case, the middleware threads will not inherit these settings
 because they are created after the scheduling configuration.
 
-## Using SCHED_OTHER scheduling policy
+#### Using SCHED_OTHER scheduling policy
 
 We start with the default settings, which means we don't configure the main thread scheduling
 policy and priority. In Linux, by default, the `SCHED_OTHER` scheduling policy is used. Since,
@@ -43,7 +43,7 @@ $ ros2 run minimal_scheduling minimal_scheduling_main_thread
 
 <script id="asciicast-gxZvQuyvNZQR1Y75nFUCq7GQ8" src="https://asciinema.org/a/gxZvQuyvNZQR1Y75nFUCq7GQ8.js" async></script>
 
-## Using SCHED_FIFO scheduling policy
+#### Using SCHED_FIFO scheduling policy
 
 Now we run the same example but using the `SCHED_FIFO` scheduling policy and setting a priority
 of 80.
@@ -79,7 +79,7 @@ each thread scheduling individually, allowing to set a priority different creato
 
 <script id="asciicast-XzlFpNwZKw0hea9vhfKFCMgj4" src="https://asciinema.org/a/XzlFpNwZKw0hea9vhfKFCMgj4.js" async></script>
 
-## Using SCHED_RR scheduling policy
+#### Using SCHED_RR scheduling policy
 
 Now we run the same example but using the `SCHED_RR` scheduling policy and setting a priority
 of 80. We expect to see the same results as in the previous case.
