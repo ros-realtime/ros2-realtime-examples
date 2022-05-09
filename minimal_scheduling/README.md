@@ -134,6 +134,9 @@ $ ps -C minimal_schedul -L -o tid,comm,rtprio,cls,psr
    6803 minimal_sched_f     80  FF   7
 ```
 
+This is similar to configuring the process real-time atrributes using the Linux [`chrt`](https://www.man7.org/linux/man-pages/man1/chrt.1.html)
+tool.
+
 <script id="asciicast-WtoeazuOds4CCpBDA0Mfkg8Ly" src="https://asciinema.org/a/WtoeazuOds4CCpBDA0Mfkg8Ly.js" async></script>
 
 ### minimal_scheduling_spin_thread
