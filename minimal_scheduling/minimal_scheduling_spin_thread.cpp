@@ -1,5 +1,4 @@
 // Copyright 2022 Carlos San Vicente
-// Copyright 2016 Open Source Robotics Foundation, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,8 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <pthread.h>
-
 #include <chrono>
 #include <memory>
 #include <string>
@@ -22,11 +19,18 @@
 #include "rclcpp/rclcpp.hpp"
 #include "std_msgs/msg/string.hpp"
 
-/* For this example, we will be configuring the scheduling policy of a thread used to spin the
- * executor. In this case, the thread middleware threads will not inherit these settings because
- * the settings apply only to the spinner thread. */
+#include "rusage_utils.hpp"
+#include "sched_utils.hpp"
+#include "command_line_options.hpp"
+#include "burn_cpu_cycles.hpp"
+
+/* For this example, we will be configuring the main thread scheduling policy before the node
+ * creation. The thread middleware threads will inherit these settings because they are created
+ * after the scheduling configuration. */
 
 using namespace std::chrono_literals;
+
+static ContextSwitchesCounter context_switches_counter(RUSAGE_THREAD);
 
 class MinimalPublisher : public rclcpp::Node
 {
@@ -37,9 +41,17 @@ public:
     publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
     auto timer_callback =
       [this]() -> void {
+        auto context_switches = context_switches_counter.get();
+        if (context_switches > 0L) {
+          RCLCPP_WARN(this->get_logger(), "Involuntary context switches: '%lu'", context_switches);
+        } else {
+          RCLCPP_INFO(this->get_logger(), "Involuntary context switches: '%lu'", context_switches);
+        }
+
+        burn_cpu_cycles(200ms);
+
         auto message = std_msgs::msg::String();
         message.data = "Hello, world! " + std::to_string(this->count_++);
-        RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
         this->publisher_->publish(message);
       };
     timer_ = this->create_wall_timer(500ms, timer_callback);
@@ -53,7 +65,17 @@ private:
 
 int main(int argc, char * argv[])
 {
-  // The node is spun in a separate thread adn configured after it is created
+  // Force flush of the stdout buffer.
+  setvbuf(stdout, NULL, _IONBF, BUFSIZ);
+
+  auto options_reader = SchedOptionsReader();
+  if (!options_reader.read_options(argc, argv)) {
+    options_reader.print_usage();
+    return 0;
+  }
+  auto options = options_reader.get_options();
+
+  // The node is spun in a separate thread and configured after it is created
   // The spin thread settings are configured after the middleware threads
   // are created. The middleware threads will NOT inherit the scheduling settings.
   // From: https://linux.die.net/man/3/pthread_create
@@ -68,14 +90,7 @@ int main(int argc, char * argv[])
       rclcpp::spin(node);
     });
 
-  struct sched_param param;
-  int policy = SCHED_FIFO;
-  param.sched_priority = 90;
-  auto ret = pthread_setschedparam(spin_thread.native_handle(), policy, &param);
-  if (ret > 0) {
-    std::cerr << "Couldn't set scheduling priority and policy. Error code " << strerror(errno) << std::endl;
-    return EXIT_FAILURE;
-  }
+  set_thread_scheduling(spin_thread.native_handle(), options.policy, options.priority);
 
   spin_thread.join();
   rclcpp::shutdown();
