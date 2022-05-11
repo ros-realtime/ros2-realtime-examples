@@ -93,7 +93,7 @@ public:
 
   void execute_trajectory_point(const trajectory_msgs::msg::JointTrajectoryPoint & point)
   {
-    // just log positions for demo purposes
+    // Logging is not safe for RT but this is just a demo for message passing
     for (std::size_t joint_index = 0; joint_index < point.positions.size(); joint_index++) {
       RCLCPP_INFO(
         this->get_logger(), "Trajectory point: joint %lu, position %lf",
