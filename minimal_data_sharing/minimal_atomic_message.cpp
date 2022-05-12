@@ -56,10 +56,9 @@ public:
     auto new_value = old_value;
     new_value.data++;
     do {
-      if (msg_.compare_exchange_strong(old_value, new_value)) {
-        break;
-      }
-    } while(true);
+      new_value = old_value;
+      new_value.data++;
+    } while(!msg_.compare_exchange_weak(old_value, new_value));
     return new_value;
   }
 
