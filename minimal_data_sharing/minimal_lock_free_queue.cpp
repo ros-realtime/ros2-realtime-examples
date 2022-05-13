@@ -58,9 +58,6 @@ private:
 class TrajectoryController : public rclcpp::Node
 {
 public:
-  using JointTrajectoryPointQueue =
-    iox::concurrent::LockFreeQueue<trajectory_msgs::msg::JointTrajectoryPoint, 100>;
-
   TrajectoryController()
   : Node("trajectory_controller")
   {
@@ -107,6 +104,8 @@ public:
   }
 
 private:
+  using JointTrajectoryPointQueue =
+      iox::concurrent::LockFreeQueue<trajectory_msgs::msg::JointTrajectoryPoint, 100>;
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr subscription_;
   JointTrajectoryPointQueue queue_;
