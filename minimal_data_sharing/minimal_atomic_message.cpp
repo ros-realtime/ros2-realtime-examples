@@ -22,11 +22,6 @@
 
 using namespace std::chrono_literals;
 
-static_assert(std::atomic<std_msgs::msg::UInt32>::is_always_lock_free);
-
-// Bigger data types are not lock free, this asserts would fail
-// static_assert(std::atomic<std_msgs::msg::String>::is_always_lock_free);
-
 class MinimalPublisher : public rclcpp::Node
 {
 public:
@@ -63,8 +58,14 @@ public:
   }
 
 private:
+  using AtomicUint32Msg = std::atomic<std_msgs::msg::UInt32>;
+
+  // Note: atomic can generate code with mutexes in it (also platform-dependent).
+  // When using atomics, always check if it is lock-free.
+  static_assert(AtomicUint32Msg::is_always_lock_free);
+
   std::vector<rclcpp::TimerBase::SharedPtr> timers_;
-  std::atomic<std_msgs::msg::UInt32> msg_;
+  AtomicUint32Msg msg_;
 };
 
 int main(int argc, char * argv[])

@@ -22,8 +22,6 @@
 
 using namespace std::chrono_literals;
 
-static_assert(std::atomic<std::uint32_t>::is_always_lock_free);
-
 class MinimalPublisher : public rclcpp::Node
 {
 public:
@@ -59,6 +57,10 @@ public:
   }
 
 private:
+  // Note: atomic can generate code with mutexes in it (also platform-dependent).
+  // When using atomics, always check if it is lock-free.
+  static_assert(std::atomic<std::uint32_t>::is_always_lock_free);
+
   rclcpp::TimerBase::SharedPtr timer_;
   rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
   std::atomic<std::uint32_t> count_;
