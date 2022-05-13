@@ -83,6 +83,7 @@ int main(int argc, char * argv[])
     node->get_realtime_callback_group(), node->get_node_base_interface());
 
   // spin real-time tasks in a separate thread
+  // note the thread is not configured with real-time attributes in this example
   auto realtime_thread = std::thread(
     [&]() {
       realtime_executor.spin();
