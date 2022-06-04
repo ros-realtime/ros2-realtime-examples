@@ -7,6 +7,8 @@ create real-time applications.
   process memory to avoid memory page faults
 * [minimal_scheduling](minimal_scheduling/README.md): shows how to configure the thread(s)
 scheduling policy and priority
+* [minimal_cpu_affinity](minimal_cpu_affinity/README.md): shows how to set the process and threads CPU affinity
+
 
 TODO: Add other packages after review (currently in rolling-experimental branch): 
 * minimal_cpu_affinity: shows how to set the process and threads CPU affinity
@@ -40,7 +42,7 @@ does not allocate dynamic memory
 ```bash
 $ mkdir -p ros2_realtime_examples_ws/src
 $ cd ros2_realtime_examples_ws/src
-$ git clone https://github.com/carlossvg/ros2-realtime-examples.git
+$ git clone https://github.com/ros-realtime/ros2-realtime-examples.git
 # Optional: Build rmw_iceoryx for zero-copy examples
 $ git clone https://github.com/ros2/rmw_iceoryx
 ```
