@@ -11,7 +11,6 @@ scheduling policy and priority
 
 
 TODO: Add other packages after review (currently in rolling-experimental branch): 
-* minimal_cpu_affinity: shows how to set the process and threads CPU affinity
 * minimal_realtime_loop: shows different approaches to created typical real-time time based loops
 * minimal_deadline_qos: shows how to use the DDS deadline QoS policy
 * minimal_lifecycle: shows how to use node lifecycle to separate configuration and runtime
