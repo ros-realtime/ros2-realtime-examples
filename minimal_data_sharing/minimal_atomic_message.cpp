@@ -25,7 +25,7 @@ using namespace std::chrono_literals;
 
 namespace
 {
-static constexpr const std::string_view OPTION_USE_ATOMIC = "--use-atomic";
+constexpr const std::string_view OPTION_USE_ATOMIC = "--use-atomic";
 
 void print_usage()
 {
@@ -50,7 +50,7 @@ public:
       this->create_callback_group(rclcpp::CallbackGroupType::Reentrant);
     rclcpp::PublisherOptions options;
     options.callback_group = reentrant_callback_group;
-    auto publisher = this->create_publisher<std_msgs::msg::UInt32>("topic", 10, options);
+    auto publisher = this->create_publisher<std_msgs::msg::UInt32>("topic", 10U, options);
     auto timer_callback =
       [this, publisher]() -> void {
         // The message data will be incremented concurrently and then published
@@ -112,7 +112,7 @@ public:
   {
     subscription_ = this->create_subscription<std_msgs::msg::UInt32>(
       "topic",
-      10,
+      10U,
       [this](std_msgs::msg::UInt32::UniquePtr msg) {
         // The received message is expected to be unique if the data was incremented atomically
         // We print a warning if this is not the case

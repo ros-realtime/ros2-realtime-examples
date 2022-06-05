@@ -17,7 +17,7 @@
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
+#include "std_msgs/msg/float64.hpp"
 
 using namespace std::chrono_literals;
 
@@ -25,44 +25,72 @@ class MinimalPublisher : public rclcpp::Node
 {
 public:
   MinimalPublisher()
-  : Node("minimal_publisher"), count_(0)
+  : Node("minimal_publisher")
   {
-    publisher_ = this->create_publisher<std_msgs::msg::String>("topic", 10);
+    publisher_ = this->create_publisher<std_msgs::msg::Float64>("topic", 10);
+
+    // called on real-time thread
     auto timer_callback =
       [this]() -> void {
-        auto message = std_msgs::msg::String();
-        message.data = "Hello, world! " + std::to_string(this->count_++);
-        RCLCPP_INFO(this->get_logger(), "Publishing: '%s'", message.data.c_str());
+        // simulate some sensor reading and processing
+        double sensor_data = get_sensor_data();
+        auto prcessed_sensor_data = process_sensor_data(sensor_data);
+        auto message = std_msgs::msg::Float64();
+        message.data = prcessed_sensor_data;
+        RCLCPP_INFO(this->get_logger(), "Publishing: '%lf'", message.data);
         this->publisher_->publish(message);
       };
 
+    // add the timer callback to a separate callback group
     realtime_callback_group_ = this->create_callback_group(
       rclcpp::CallbackGroupType::MutuallyExclusive, false);
     timer_ = this->create_wall_timer(500ms, timer_callback, realtime_callback_group_);
 
-    count_ = declare_parameter("count", 0);
+    // add parameter callback to the default callback group
+    gain_ = declare_parameter("gain", 1.0);
     parameter_event_handler_ = std::make_shared<rclcpp::ParameterEventHandler>(this);
+
+    // called on non-real-time thread
     auto param_callback = [this](const rclcpp::Parameter & p) {
-        RCLCPP_INFO(this->get_logger(), "Count changed to: '%ld'", p.as_int());
-        count_.store(static_cast<std::uint32_t>(p.as_int()));
+        auto new_gain = p.as_double();
+        RCLCPP_INFO(this->get_logger(), "New gain: '%lf'", new_gain);
+        set_sensor_gain(new_gain);
       };
     parameter_callback_handle_ =
-      parameter_event_handler_->add_parameter_callback("count", param_callback);
+      parameter_event_handler_->add_parameter_callback("gain", param_callback);
   }
 
-  rclcpp::CallbackGroup::SharedPtr get_realtime_callback_group()
+  rclcpp::CallbackGroup::SharedPtr get_realtime_callback_group() const
   {
     return realtime_callback_group_;
+  }
+
+  double process_sensor_data(double sensor_in) const
+  {
+    return sensor_in *= gain_.load();
+  }
+
+  void set_sensor_gain(double new_gain)
+  {
+    gain_.store(new_gain);
+  }
+
+  double get_sensor_data()
+  {
+    // simulate some sine-wave based input
+    static double rad{2 * M_PI};
+    rad += M_PI / 5;
+    return std::sin(rad);
   }
 
 private:
   // Note: atomic can generate code with mutexes in it (also platform-dependent).
   // When using atomics, always check if it is lock-free.
-  static_assert(std::atomic<std::uint32_t>::is_always_lock_free);
+  static_assert(std::atomic<double>::is_always_lock_free);
 
   rclcpp::TimerBase::SharedPtr timer_;
-  rclcpp::Publisher<std_msgs::msg::String>::SharedPtr publisher_;
-  std::atomic<std::uint32_t> count_;
+  rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr publisher_;
+  std::atomic<double> gain_{1.0};
   rclcpp::CallbackGroup::SharedPtr realtime_callback_group_;
   std::shared_ptr<rclcpp::ParameterEventHandler> parameter_event_handler_;
   std::shared_ptr<rclcpp::ParameterCallbackHandle> parameter_callback_handle_;
