@@ -213,6 +213,15 @@ $ ros2 run minimal_scheduling minimal_scheduling_real_time_tutorial
 
 Output: real-time subscriber is not preempted by other kernel processes, but normal subscriber is.
 ```bash
+ros2 run minimal_scheduling minimal_scheduling_real_time_tutorial
+[WARN] [1680948979.971439054] [minimal_sub1]: [sub]    Involuntary context switches: '25'
+[WARN] [1680948979.971483357] [minimal_sub2]: [sub]    Involuntary context switches: '20'
+[WARN] [1680948980.473828433] [minimal_sub1]: [sub]    Involuntary context switches: '23'
+[WARN] [1680948980.473872245] [minimal_sub2]: [sub]    Involuntary context switches: '21'
+[WARN] [1680948980.972909968] [minimal_sub1]: [sub]    Involuntary context switches: '26'
+[WARN] [1680948980.973096277] [minimal_sub2]: [sub]    Involuntary context switches: '15'
+
+ros2 run minimal_scheduling minimal_scheduling_real_time_tutorial --sched SCHED_FIFO --priority 80
 [WARN] [1680947876.099416572] [minimal_sub1]: [sub]    Involuntary context switches: '8'
 [INFO] [1680947876.099471567] [minimal_sub2]: [sub]    Involuntary context switches: '0'
 [WARN] [1680947876.599197932] [minimal_sub1]: [sub]    Involuntary context switches: '49'
