@@ -202,6 +202,25 @@ $ ps -C minimal_schedul -L -o tid,comm,rtprio,cls,psr
 
 <script id="asciicast-FncZQ5gSgp6sNIxHj4weDra3n" src="https://asciinema.org/a/FncZQ5gSgp6sNIxHj4weDra3n.js" async></script>
 
+
+### minimal_scheduling_real_time_tutorial
+
+Example to demonstrate mixed system, with a real-time thread and non real-time thread. Two publisher callbacks are created. The first one is executed in the real-time thread, the other one is executed in a non real-time thread. Output: No preemptions of the real-time publisher and multiple preemptions of the non real-time publisher. 
+
+```bash
+$ ros2 run minimal_scheduling minimal_scheduling_real_time_tutorial
+```
+
+Output: real-time subscriber is not preempted by other kernel processes, but normal subscriber is.
+```bash
+[WARN] [1680947876.099416572] [minimal_sub1]: [sub]    Involuntary context switches: '8'
+[INFO] [1680947876.099471567] [minimal_sub2]: [sub]    Involuntary context switches: '0'
+[WARN] [1680947876.599197932] [minimal_sub1]: [sub]    Involuntary context switches: '49'
+[INFO] [1680947876.599202498] [minimal_sub2]: [sub]    Involuntary context switches: '0'
+[WARN] [1680947877.101378852] [minimal_sub1]: [sub]    Involuntary context switches: '25'
+[INFO] [1680947877.101372018] [minimal_sub2]: [sub]    Involuntary context switches: '0'
+```
+
 ## Resources
 
 - [https://www.man7.org/linux/man-pages/man7/sched.7.html](https://www.man7.org/linux/man-pages/man7/sched.7.html)

@@ -7,6 +7,7 @@
   <maintainer email="carlos.svic@gmail.com">Carlos San Vicente</maintainer>
   <license>Apache License 2.0</license>
   <author>Carlos San Vicente</author>
+  <author>Jan Staschulat</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
