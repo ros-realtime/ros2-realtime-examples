@@ -232,12 +232,16 @@ ros2 run minimal_scheduling minimal_scheduling_real_time_tutorial --sched SCHED_
 
 ## Resources
 
-- [https://www.man7.org/linux/man-pages/man7/sched.7.html](https://www.man7.org/linux/man-pages/man7/sched.7.html)
-- [https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start](https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start)
-- [https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base](https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base)
-- [https://linux.die.net/man/3/pthread_setschedparam](https://linux.die.net/man/3/pthread_setschedparam)
-- [https://linux.die.net/man/3/pthread_create](https://linux.die.net/man/3/pthread_create)
-- [https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-cpu-scheduler](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-cpu-scheduler)
-- Callback groups executor - Ralph Lange [video](https://www.youtube.com/watch?v=5Sd5bvvZeb0), [slides](https://www.apex.ai/_files/ugd/984e93_f3791ae0711042a883bfc40f827d6268.pdf)
-- [https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor](https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor)
-- [Basic investigation of priority of DDS-generated threads.](https://discourse.ros.org/uploads/short-url/p2fAAbrKHkrSqZ9oJkZNwOOf2Hi.pdf)
+- Linux scheduling and multi-threading
+  - [https://www.man7.org/linux/man-pages/man7/sched.7.html](https://www.man7.org/linux/man-pages/man7/sched.7.html)
+  - [https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start](https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start)
+  - [https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base](https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base)
+  - [https://linux.die.net/man/3/pthread_setschedparam](https://linux.die.net/man/3/pthread_setschedparam)
+  - [https://linux.die.net/man/3/pthread_create](https://linux.die.net/man/3/pthread_create)
+  - [https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-cpu-scheduler](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-cpu-scheduler)
+- ROS 2 Execution Management
+  - ROS 2 documentation [About-Executors](https://docs.ros.org/en/humble/Concepts/About-Executors.html)
+  - ROS 2 documentation [Using-callback-groups](https://docs.ros.org/en/humble/How-To-Guides/Using-callback-groups.html)
+  - Talk "Callback group level executor", Ralph Lange, ROS 2 Executor Workshop, 2021. [video](https://www.youtube.com/watch?v=5Sd5bvvZeb0), [slides](https://www.apex.ai/_files/ugd/984e93_f3791ae0711042a883bfc40f827d6268.pdf)
+  - Code example with callback group level executor [https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor](https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor)
+  - [Basic investigation of priority of DDS-generated threads.](https://discourse.ros.org/uploads/short-url/p2fAAbrKHkrSqZ9oJkZNwOOf2Hi.pdf)
