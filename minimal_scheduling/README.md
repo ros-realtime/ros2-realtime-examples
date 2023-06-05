@@ -202,14 +202,46 @@ $ ps -C minimal_schedul -L -o tid,comm,rtprio,cls,psr
 
 <script id="asciicast-FncZQ5gSgp6sNIxHj4weDra3n" src="https://asciinema.org/a/FncZQ5gSgp6sNIxHj4weDra3n.js" async></script>
 
+
+### minimal_scheduling_real_time_executor
+
+Example to demonstrate mixed system, with a real-time thread and non real-time thread. Two publisher callbacks are created. The first one is executed in the real-time thread, the other one is executed in a non real-time thread. Output: No preemptions of the real-time publisher and multiple preemptions of the non real-time publisher. 
+
+```bash
+$ ros2 run minimal_scheduling minimal_scheduling_real_time_executor
+```
+
+Output: real-time subscriber is not preempted by other kernel processes, but normal subscriber is.
+```bash
+ros2 run minimal_scheduling minimal_scheduling_real_time_executor
+[WARN] [1680948979.971439054] [minimal_sub1]: [sub]    Involuntary context switches: '25'
+[WARN] [1680948979.971483357] [minimal_sub2]: [sub]    Involuntary context switches: '20'
+[WARN] [1680948980.473828433] [minimal_sub1]: [sub]    Involuntary context switches: '23'
+[WARN] [1680948980.473872245] [minimal_sub2]: [sub]    Involuntary context switches: '21'
+[WARN] [1680948980.972909968] [minimal_sub1]: [sub]    Involuntary context switches: '26'
+[WARN] [1680948980.973096277] [minimal_sub2]: [sub]    Involuntary context switches: '15'
+
+ros2 run minimal_scheduling minimal_scheduling_real_time_executor --sched SCHED_FIFO --priority 80
+[WARN] [1680947876.099416572] [minimal_sub1]: [sub]    Involuntary context switches: '8'
+[INFO] [1680947876.099471567] [minimal_sub2]: [sub]    Involuntary context switches: '0'
+[WARN] [1680947876.599197932] [minimal_sub1]: [sub]    Involuntary context switches: '49'
+[INFO] [1680947876.599202498] [minimal_sub2]: [sub]    Involuntary context switches: '0'
+[WARN] [1680947877.101378852] [minimal_sub1]: [sub]    Involuntary context switches: '25'
+[INFO] [1680947877.101372018] [minimal_sub2]: [sub]    Involuntary context switches: '0'
+```
+
 ## Resources
 
-- [https://www.man7.org/linux/man-pages/man7/sched.7.html](https://www.man7.org/linux/man-pages/man7/sched.7.html)
-- [https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start](https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start)
-- [https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base](https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base)
-- [https://linux.die.net/man/3/pthread_setschedparam](https://linux.die.net/man/3/pthread_setschedparam)
-- [https://linux.die.net/man/3/pthread_create](https://linux.die.net/man/3/pthread_create)
-- [https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-cpu-scheduler](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-cpu-scheduler)
-- Callback groups executor - Ralph Lange [video](https://www.youtube.com/watch?v=5Sd5bvvZeb0), [slides](https://www.apex.ai/_files/ugd/984e93_f3791ae0711042a883bfc40f827d6268.pdf)
-- [https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor](https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor)
-- [Basic investigation of priority of DDS-generated threads.](https://discourse.ros.org/uploads/short-url/p2fAAbrKHkrSqZ9oJkZNwOOf2Hi.pdf)
+- Linux scheduling and multi-threading
+  - [https://www.man7.org/linux/man-pages/man7/sched.7.html](https://www.man7.org/linux/man-pages/man7/sched.7.html)
+  - [https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start](https://wiki.linuxfoundation.org/realtime/documentation/technical_basics/sched_policy_prio/start)
+  - [https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base](https://wiki.linuxfoundation.org/realtime/documentation/howto/applications/application_base)
+  - [https://linux.die.net/man/3/pthread_setschedparam](https://linux.die.net/man/3/pthread_setschedparam)
+  - [https://linux.die.net/man/3/pthread_create](https://linux.die.net/man/3/pthread_create)
+  - [https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-cpu-scheduler](https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/s-cpu-scheduler)
+- ROS 2 Execution Management
+  - ROS 2 documentation [About-Executors](https://docs.ros.org/en/humble/Concepts/About-Executors.html)
+  - ROS 2 documentation [Using-callback-groups](https://docs.ros.org/en/humble/How-To-Guides/Using-callback-groups.html)
+  - Talk "Callback group level executor", Ralph Lange, ROS 2 Executor Workshop, 2021. [video](https://www.youtube.com/watch?v=5Sd5bvvZeb0), [slides](https://www.apex.ai/_files/ugd/984e93_f3791ae0711042a883bfc40f827d6268.pdf)
+  - Code example with callback group level executor [https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor](https://github.com/ros2/examples/tree/master/rclcpp/executors/cbg_executor)
+  - [Basic investigation of priority of DDS-generated threads.](https://discourse.ros.org/uploads/short-url/p2fAAbrKHkrSqZ9oJkZNwOOf2Hi.pdf)

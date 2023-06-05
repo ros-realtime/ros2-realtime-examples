@@ -26,11 +26,15 @@ ament_target_dependencies(minimal_scheduling_spin_thread rclcpp std_msgs)
 add_executable(minimal_scheduling_callback_group minimal_scheduling_callback_group.cpp)
 ament_target_dependencies(minimal_scheduling_callback_group rclcpp std_msgs)
 
+add_executable(minimal_scheduling_real_time_executor minimal_scheduling_real_time_executor.cpp)
+ament_target_dependencies(minimal_scheduling_real_time_executor rclcpp std_msgs)
+
 install(TARGETS
   minimal_scheduling_main_thread
   minimal_scheduling_middleware_threads
   minimal_scheduling_spin_thread
   minimal_scheduling_callback_group
+  minimal_scheduling_real_time_executor
   DESTINATION lib/${PROJECT_NAME}
 )
 
