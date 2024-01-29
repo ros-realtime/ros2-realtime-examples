@@ -17,6 +17,7 @@
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
+#include "rcpputils/thread.hpp"
 #include "std_msgs/msg/string.hpp"
 
 #include "rusage_utils.hpp"
@@ -85,12 +86,15 @@ int main(int argc, char * argv[])
   rclcpp::init(argc, argv);
 
   auto node = std::make_shared<MinimalPublisher>();
-  auto spin_thread = std::thread(
+  rcpputils::ThreadAttribute attr;
+  attr.set_sched_policy(rcpputils::SchedPolicy::fifo);
+  attr.set_priority(options.priority);
+  auto spin_thread = rcpputils::Thread(
+    attr,
     [&]() {
       rclcpp::spin(node);
     });
 
-  set_thread_scheduling(spin_thread.native_handle(), options.policy, options.priority);
 
   spin_thread.join();
   rclcpp::shutdown();

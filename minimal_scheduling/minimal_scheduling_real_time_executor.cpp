@@ -17,6 +17,7 @@
 #include <string>
 
 #include "rclcpp/rclcpp.hpp"
+#include "rcpputils/thread.hpp"
 #include "std_msgs/msg/string.hpp"
 
 #include "rusage_utils.hpp"
@@ -113,8 +114,14 @@ int main(int argc, char * argv[])
   auto node_sub = std::make_shared<MinimalSubscriber>("minimal_sub1", "topic");
   auto node_sub_rt = std::make_shared<MinimalSubscriber>("minimal_sub2", "topic_rt");
 
-  rclcpp::executors::StaticSingleThreadedExecutor default_executor;
-  rclcpp::executors::StaticSingleThreadedExecutor realtime_executor;
+
+  rcpputils::ThreadAttribute default_attr;
+  rcpputils::ThreadAttribute realtime_attr;
+  realtime_attr.set_sched_policy(rcpputils::SchedPolicy::fifo);
+  realtime_attr.set_priority(options.priority);
+
+  rclcpp::executors::SingleThreadedExecutor default_executor(rclcpp::ExecutorOptions(), default_attr);
+  rclcpp::executors::SingleThreadedExecutor realtime_executor(rclcpp::ExecutorOptions(), realtime_attr);
 
   // the publisher and non real-time subscriber are processed by default_executor
   default_executor.add_node(node_pub);
@@ -132,21 +139,19 @@ int main(int argc, char * argv[])
   // of the thread, in which the Executor is spinning. 
 
   // spin non real-time tasks in a separate thread
-  auto default_thread = std::thread(
+  auto default_executor_thread = std::thread(
     [&]() {
       default_executor.spin();
     });
 
   // spin real-time tasks in a separate thread
-  auto realtime_thread = std::thread(
+  auto realtime_executor_thread = std::thread(
     [&]() {
       realtime_executor.spin();
     });
 
-  set_thread_scheduling(realtime_thread.native_handle(), options.policy, options.priority);
-
-  default_thread.join();
-  realtime_thread.join();
+  default_executor_thread.join();
+  realtime_executor_thread.join();
 
   rclcpp::shutdown();
   return 0;
